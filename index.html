@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Happy Birthday Thangoo - A Little Surprise</title>
+    <style>
+        :root {
+            --panel-bg: rgba(255, 255, 255, 0.12);
+            --panel-border: rgba(255, 255, 255, 0.25);
+            --text-color: #ffffff;
+            --accent-pink: #ff65a3;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #d463b2;
+            background: linear-gradient(180deg, #e47cd0 0%, #903b87 100%);
+            height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: var(--text-color);
+            padding: 15px;
+        }
+
+        /* Ambient Dynamic Canvas Background */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Glassy Container Panels */
+        .screen {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            padding: 25px 20px;
+            border-radius: 24px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--panel-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.5s ease-in-out;
+            position: relative;
+            z-index: 2;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        h1, h2, h3 {
+            font-weight: 500;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        p {
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            opacity: 0.95;
+            line-height: 1.5;
+        }
+
+        /* Form Controls for Login */
+        .input-field {
+            width: 100%;
+            padding: 12px 20px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            color: #fff;
+            outline: none;
+            font-size: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        .input-field:focus {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Countdown Elements */
+        .timer {
+            font-size: 3.2rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin: 15px 0;
+        }
+
+        /* Interactive Buttons */
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            position: relative;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 50px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            touch-action: manipulation;
+        }
+
+        .btn-yes {
+            background-color: #ffffff;
+            color: #b94297;
+            width: 45%;
+        }
+
+        .btn-yes:active {
+            transform: scale(0.95);
+        }
+
+        .btn-no {
+            background-color: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            position: absolute;
+            width: 45%;
+            right: 10%;
+        }
+
+        /* Mini Game Styles */
+        .game-canvas {
+            width: 100%;
+            height: 200px;
+            position: relative;
+            margin-bottom: 15px;
+            overflow: hidden;
+            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        .butterfly {
+            position: absolute;
+            font-size: 1.8rem;
+            cursor: pointer;
+            animation: floatAround 5s infinite linear;
+            touch-action: none;
+        }
+
+        @keyframes floatAround {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(30px, 20px) rotate(10deg); }
+            50% { transform: translate(60px, -10px) rotate(-10deg); }
+            75% { transform: translate(20px, 40px) rotate(15deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        .jar-container {
+            position: relative;
+            width: 70px;
+            height: 85px;
+            margin: 5px auto;
+        }
+
+        .jar {
+            font-size: 3.8rem;
+            line-height: 1;
+        }
+
+        .jar-liquid {
+            position: absolute;
+            bottom: 10px;
+            left: 15px;
+            width: 40px;
+            height: 0px;
+            background: rgba(255, 255, 255, 0.45);
+            border-radius: 0 0 10px 10px;
+            transition: height 0.4s ease;
+        }
+
+        .popup-note {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            min-height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .gift-box {
+            font-size: 4.5rem;
+            cursor: pointer;
+            margin: 20px 0;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-12px); }
+            60% { transform: translateY(-6px); }
+        }
+
+        /* 3D Typography Effects */
+        .text-3d-wrap {
+            perspective: 400px;
+            margin: 20px 0;
+        }
+
+        .text-3d {
+            font-family: 'Georgia', serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-transform: capitalize;
+            color: #fff;
+            letter-spacing: 1px;
+            line-height: 1.2;
+            text-shadow: 
+                0 1px 0 #d974c2, 0 2px 0 #c75fb0, 0 3px 0 #b54c9e, 0 4px 0 #a33b8d,
+                0 5px 0 #912b7c, 0 6px 1px rgba(0,0,0,0.1), 0 0 5px rgba(0,0,0,0.15),
+                0 2px 4px rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.2), 0 8px 16px rgba(0,0,0,0.15);
+            animation: float3d 3.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes float3d {
+            0% { transform: rotateX(10deg) rotateY(-10deg) translateY(0); }
+            100% { transform: rotateX(-10deg) rotateY(10deg) translateY(-8px); }
+        }
+
+        /* Ambience Floating Elements */
+        .bg-element {
+            position: absolute;
+            font-size: 1.4rem;
+            opacity: 0.25;
+            pointer-events: none;
+            animation: floatUp 7s infinite linear;
+            z-index: 1;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(105vh) translateX(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.35; }
+            90% { opacity: 0.35; }
+            100% { transform: translateY(-10vh) translateX(30px) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Particle Layer System -->
+    <canvas id="partyCanvas"></canvas>
+
+    <!-- Floating Background Decoratives -->
+    <div class="bg-element" style="left: 8%; animation-delay: 0s;">🦋</div>
+    <div class="bg-element" style="left: 28%; animation-delay: 2s;">✨</div>
+    <div class="bg-element" style="left: 68%; animation-delay: 4.5s;">🦋</div>
+    <div class="bg-element" style="left: 88%; animation-delay: 1.5s;">❤️</div>
+
+    <!-- SCREEN 0: Secret Security Login Portal -->
+    <div id="screen-login" class="screen active">
+        <h2 style="font-family: 'Georgia', serif; font-style: italic;">Access Verification 🔐</h2>
+        <p>Please log in using your private Secret ID to unlock this surprise presentation.</p>
+        <input type="text" id="login-input" class="input-field" placeholder="Enter Secret ID here...">
+        <button class="btn btn-yes" style="width: 80%;" onclick="verifyLogin()">Unlock Portal ✨</button>
+    </div>
+
+    <!-- SCREEN 1: Dynamic Countdown Panel -->
+    <div id="screen-countdown" class="screen">
+        <p id="countdown-text">Wait... something magical happens at 12:00 AM 🌙</p>
+        <div class="timer" id="timer-display">11:59:53</div>
+        <p style="font-size: 0.8rem; opacity: 0.65; letter-spacing: 1px;">JUST A FEW SECONDS...</p>
+    </div>
+
+    <!-- SCREEN 2: Question Checkpoint -->
+    <div id="screen-question" class="screen">
+        <h2 style="font-family: 'Georgia', serif; font-style: italic;">Hey my Love 🥺</h2>
+        <p id="question-prompt">Do you love me? ❤️</p>
+        <div class="btn-container" id="btn-frame">
+            <button class="btn btn-yes" onclick="nextScreen('screen-game'); startGame();">Yes</button>
+            <button class="btn btn-no" id="btn-no" onclick="handleNoInteraction()" onmouseover="handleNoInteraction()">No</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 3: Butterfly Engagement Game -->
+    <div id="screen-game" class="screen">
+        <h3>Catch the butterflies 🦋</h3>
+        <p style="font-size: 0.82rem; opacity: 0.75; margin-bottom: 10px;" id="game-instruction">Catch them all... each one has something to tell you ✨</p>
+        
+        <div class="game-canvas" id="game-canvas"></div>
+
+        <div class="jar-container">
+            <div class="jar-liquid" id="jar-liquid"></div>
+            <div class="jar">🏺</div>
+        </div>
+
+        <div class="popup-note" id="popup-note">
+            Tap the butterflies to catch them!
+        </div>
+    </div>
+
+    <!-- SCREEN 4: Gift Transition Module -->
+    <div id="screen-gift" class="screen">
+        <h3>The bottle opens... ✨</h3>
+        <p>They left a gift just for you 🎁</p>
+        <div class="gift-box" onclick="nextScreen('screen-birthday')">🎁</div>
+        <p style="font-size: 0.8rem; opacity: 0.75;">Tap to open ❤️</p>
+    </div>
+
+    <!-- SCREEN 5: Custom Birthday Manifest Panel -->
+    <div id="screen-birthday" class="screen">
+        <h1 style="font-family: 'Georgia', serif; font-size: 1.9rem; margin-bottom: 10px;">Happy Birthday Thangoo💝 🎂</h1>
+        <div style="max-height: 180px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;">
+            <p style="font-size: 0.88rem; line-height: 1.4; text-align: justify; margin-bottom: 0;">
+                You mean more than words can say... and I'm really lucky to have you in my life 💖 your my varam💎🤲 your my life🫀 Thanks for coming my life🤧🥹 yeppaium unna vittu poga matta Thangoo💝 iam always stand with you my motheryy🫀 dont cry it my amma pls🙏 agin say Happy Birthday my amma❤️‍🩹 My life🫀 & My world🌍💎 yellam neethan Thangoo yennaku nee mattum than🫂❤️‍🩹
+            </p>
+        </div>
+        <hr style="width: 90%; border: 0.5px solid rgba(255,255,255,0.2); margin: 10px 0;">
+        <p style="font-style: italic; font-weight: 600; font-size: 0.9rem; margin-bottom: 5px;">So... you can Happy with me😢 </p>
+        <p style="font-size: 0.8rem; opacity: 0.75; margin-bottom: 15px;">Just you, me & the stars 🌌</p>
+        <button class="btn btn-yes" style="width: 60%;" onclick="nextScreen('screen-final'); triggerPartyCelebration();">Yes ❤️</button>
+    </div>
+
+    <!-- SCREEN 6: Final 3D Render Screen -->
+    <div id="screen-final" class="screen">
+        <div class="text-3d-wrap">
+            <div class="text-3d">I Love You<br>Thangoo</div>
+        </div>
+        <p style="margin-top: 10px; font-size: 1.2rem;">✨❤️✨</p>
+    </div>
+
+    <script>
+        // --- SCREEN ARCHITECTURE MANAGER ---
+        function nextScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // --- GATEWAY VALIDATION ---
+        function verifyLogin() {
+            const inputVal = document.getElementById('login-input').value.trim().toLowerCase();
+            // Accepts 'thangoo' to continue
+            if (inputVal === 'thangoo') {
+                nextScreen('screen-countdown');
+                initCountdown();
+            } else {
+                alert("Incorrect Secret ID! Please try again. 🤫");
+            }
+        }
+
+        // --- RUNNING TIMER SEQUENCE ---
+        function initCountdown() {
+            let secondsLeft = 7; 
+            const timerDisplay = document.getElementById('timer-display');
+            
+            const countdownInterval = setInterval(() => {
+                secondsLeft--;
+                if (secondsLeft >= 0) {
+                    timerDisplay.textContent = `11:59:${53 + (7 - secondsLeft)}`;
+                } else {
+                    clearInterval(countdownInterval);
+                    timerDisplay.textContent = "12:00:00";
+                    setTimeout(() => {
+                        nextScreen('screen-question');
+                    }, 1000);
+                }
+            }, 1000);
+        }
+
+        // --- EVADING EVASION LOGIC FOR 'NO' CONTROL ---
+        let noCount = 0;
+        const noMessages = [
+            "Please don't say no... 🥺",
+            "You're breaking my heart... 💔",
+            "Think again! 😭",
+            "Wrong answer! Try again 👀"
+        ];
+        
+        function handleNoInteraction() {
+            const btnNo = document.getElementById('btn-no');
+            const promptText = document.getElementById('question-prompt');
+            
+            promptText.textContent = noMessages[Math.min(noCount, noMessages.length - 1)];
+            noCount++;
+            
+            // Constrain relocation vectors safely within screen box boundary limits
+            const randomX = Math.floor(Math.random() * 120) - 60; 
+            const randomY = Math.floor(Math.random() * 80) - 40;   
+            
+            const currentScale = Math.max(1 - (noCount * 0.15), 0.45);
+            btnNo.style.transform = `translate(${randomX}px, ${randomY}px) scale(${currentScale})`;
+            
+            if(noCount >= 5) {
+                btnNo.style.display = 'none';
+            }
+        }
+
+        // --- BUTTERFLY MINI ENGAGEMENT MODULE ---
+        const romanticNotes = [
+            "I don't say this enough... but I really love you ❤️",
+            "You made my normal days feel special... just by being there ✨",
+            "I know I mess up sometimes... and I'm really sorry for that 🥺",
+            "But no matter what... I always choose you ❤️",
+            "And today... I just want to see you smile 😊"
+        ];
+        
+        let caughtCount = 0;
+        const totalButterflies = romanticNotes.length;
+
+        function startGame() {
+            const canvas = document.getElementById('game-canvas');
+            canvas.innerHTML = ''; 
+            
+            for (let i = 0; i < totalButterflies; i++) {
+                const butterfly = document.createElement('div');
+                butterfly.classList.add('butterfly');
+                butterfly.textContent = '🦋';
+                
+                butterfly.style.left = `${10 + (i * 18)}%`;
+                butterfly.style.top = `${20 + (Math.random() * 45)}%`;
+                butterfly.style.animationDuration = `${3.5 + Math.random() * 3}s`;
+                butterfly.style.animationDelay = `${Math.random() * 1.5}s`;
+                
+                // Unified touch/click configuration 
+                const triggerCatch = (e) => {
+                    e.preventDefault();
+                    catchButterfly(butterfly, i);
+                };
+                butterfly.addEventListener('click', triggerCatch);
+                butterfly.addEventListener('touchstart', triggerCatch, {passive: false});
+                
+                canvas.appendChild(butterfly);
+            }
+        }
+
+        function catchButterfly(element, index) {
+            if(element.style.pointerEvents === 'none') return;
+            element.style.pointerEvents = 'none';
+            element.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            
+            element.style.left = '50%';
+            element.style.top = '80%';
+            element.style.transform = 'scale(0) rotate(720deg)';
+            element.style.opacity = '0';
+            
+            caughtCount++;
+            const jarLiquid = document.getElementById('jar-liquid');
+            jarLiquid.style.height = `${(caughtCount / totalButterflies) * 55}px`;
+            
+            const noteDisplay = document.getElementById('popup-note');
+            noteDisplay.innerHTML = romanticNotes[index];
+            
+            if (caughtCount === totalButterflies) {
+                setTimeout(() => {
+                    nextScreen('screen-gift');
+                }, 2500);
+            }
+        }
+
+        // --- BACKGROUND SYSTEM CANVAS GENERATOR (BALLOONS & PAPERS) ---
+        const pCanvas = document.getElementById('partyCanvas');
+        const pCtx = pCanvas.getContext('2d');
+        let particles = [];
+        let animationFrameId;
+
+        function setCanvasSize() {
+            pCanvas.width = window.innerWidth;
+            pCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', setCanvasSize);
+        setCanvasSize();
+
+        class CelebrationParticle {
+            constructor(variant) {
+                this.variant = variant; // 'balloon' or 'paper'
+                this.x = Math.random() * pCanvas.width;
+                this.y = variant === 'balloon' ? pCanvas.height + 80 : Math.random() * -pCanvas.height;
+                this.radius = variant === 'balloon' ? Math.random() * 16 + 14 : Math.random() * 5 + 3;
+                this.speedY = variant === 'balloon' ? -(Math.random() * 1.8 + 0.8) : Math.random() * 2.5 + 1.5;
+                this.speedX = Math.random() * 1.5 - 0.75;
+                this.color = `hsl(${Math.random() * 360}, 90%, 65%)`;
+                this.rotation = Math.random() * 360;
+                this.rotSpeed = Math.random() * 2 - 1;
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                if(this.variant === 'paper') this.rotation += this.rotSpeed;
+            }
+
+            draw() {
+                pCtx.save();
+                pCtx.translate(this.x, this.y);
+                pCtx.fillStyle = this.color;
+
+                if(this.variant === 'paper') {
+                    pCtx.rotate(this.rotation * Math.PI / 180);
+                    pCtx.fillRect(-this.radius, -this.radius, this.radius * 2, this.radius);
+                } else {
+                    // Balloon Sphere geometry
+                    pCtx.beginPath();
+                    pCtx.ellipse(0, 0, this.radius * 0.8, this.radius, 0, 0, Math.PI * 2);
+                    pCtx.fill();
+                    
+                    // Balloon Knot base
+                    pCtx.beginPath();
+                    pCtx.moveTo(0, this.radius);
+                    pCtx.lineTo(-4, this.radius + 6);
+                    pCtx.lineTo(4, this.radius + 6);
+                    pCtx.closePath();
+                    pCtx.fill();
+
+                    // Balloon String line
+                    pCtx.beginPath();
+                    pCtx.moveTo(0, this.radius + 6);
+                    pCtx.lineTo(0, this.radius + 20);
+                    pCtx.strokeStyle = 'rgba(255,255,255,0.4)';
+                    pCtx.lineWidth = 1;
+                    pCtx.stroke();
+                }
+                pCtx.restore();
+            }
+        }
+
+        function triggerPartyCelebration() {
+            particles = [];
+            for(let i=0; i<85; i++) particles.push(new CelebrationParticle('paper'));
+            for(let i=0; i<20; i++) particles.push(new CelebrationParticle('balloon'));
+            runCelebrationEngine();
+        }
+
+        function runCelebrationEngine() {
+            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+            
+            particles.forEach((p, idx) => {
+                p.update();
+                p.draw();
+                
+                // Reset coordinates cleanly upon edge boundary crossing loops
+                if(p.variant === 'paper' && p.y > pCanvas.height) {
+                    particles[idx] = new CelebrationParticle('paper');
+                }
+                if(p.variant === 'balloon' && p.y < -60) {
+                    particles[idx] = new CelebrationParticle('balloon');
+                }
+            });
+            animationFrameId = requestAnimationFrame(runCelebrationEngine);
+        }
+    </script>
+</body>
+</html>
